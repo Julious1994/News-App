@@ -1,23 +1,38 @@
-import logo from './logo.svg';
+import React, {useState} from 'react';
 import './App.css';
+import Service from './http';
+import List from './News/List';
+import View from './News/View';
+
+
+const services = new Service();
 
 function App() {
+  const [newsList, setNewsList] = useState([]);
+  const [news, setNews] = useState();
+  const [loading, setLoading] = useState(false);
+
+  React.useEffect(() => {
+    setLoading(true);
+    services.get('top-headlines?country=in').then(result => {
+      setLoading(false);
+      const {articles = []} = result;
+      setNewsList([...articles]);
+    });
+  }, []);
+
+  const handleCloseView = React.useCallback(() => {
+    setNews();
+  }, []);
+
+  const handleNews = React.useCallback((news) => {
+    setNews(news)
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {!news && <List data={newsList} onNews={handleNews} loading={loading} />}
+      {news && <View news={news} onClose={handleCloseView}/>}
     </div>
   );
 }
